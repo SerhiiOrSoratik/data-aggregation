@@ -1,5 +1,4 @@
 const db = require('../db');
-const tasks = require('./tasks.controller');
 
 class Lists {
     
@@ -44,7 +43,7 @@ class Lists {
              tasks = await db.query(`SELECT * FROM todo WHERE listid = $1;`, [listid]);
              res.status(200);
              res.json(tasks.rows);
-        }   
+        }    
         else if(all === 'false') {
              tasks = await db.query(`SELECT * FROM todo WHERE (listid = $1) AND (done = false)`, [listid]);
              res.status(200);
