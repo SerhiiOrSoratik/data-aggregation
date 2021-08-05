@@ -1,60 +1,35 @@
-const db = require('../db');
+const taskModel = require('../models/tasks');
 
 class Tasks {
 
-    async createTask(req, res) {
+     async createTask(req, res) {
         const {listid, task, done, due_date} = req.body;
-        const newTask = await db.query(`INSERT INTO todo (listid, task, done, due_date) VALUES ($1, $2, $3, $4) RETURNING *`, [listid, task, done, due_date]);
-        res.status(201);
-        res.json(newTask.rows);
+        res.status(200);
+        res.json(await taskModel.createTask(listid, task, done, due_date));
     }
 
-    async getTasks(req, res) {
-        const tasks = await db.query('SELECT * FROM todo;');
+     async getTasks(req, res) {
         res.status(201);
-        res.json(tasks.rows)
+        res.json(await taskModel.getTasks());
     }
 
-    async getTask(req, res) {
-        const task = await db.query(`SELECT * FROM todo WHERE id=$1;`, [req.body.id]);
-        res.status(201);
-        res.json(task.rows)
+     async getTask(req, res) {
+        res.status(201)
+        res.json(await taskModel.getTask(req.params.id));
     }
 
-    async updateTask(req, res) {
-        let task = {};
-        if (req.body.title && !req.body.done && !req.body.due_date) {
-            task = await db.query(`UPDATE todo SET title=$1 WHERE id=$2 RETURNING *`, [req.body.title, req.body.id]);
-            res.status(200);
-            res.json(task.rows);
-        }
-        else if (!req.body.title && req.body.done && !req.body.due_date) {
-            task = await db.query(`UPDATE todo SET done=$1 WHERE id=$2 RETURNING *`, [req.body.done, req.body.id]);
-            res.status(200);
-            res.json(task.rows);
-        }
-        else if (!req.body.title && !req.body.done && req.body.due_date) {
-            task = await db.query(`UPDATE todo SET due_date=$1 WHERE id=$2 RETURNING *`, [req.body.due_date, req.body.id]);
-            res.status(200);
-            res.json(task.rows);
-        }
-        else {
-            res.status(400);
-            res.end('Bad request');
-        } 
+    updateTask(req, res) {
+        taskModel.updateTask(req, res);
     }
 
     async putTask(req, res) {
-        const {title, done, due_date} = req.body;
-        const task = await db.query(`UPDATE todo SET title=$1, done=$2, due_date=$3 WHERE id=$4 RETURNING *`, [title, done, due_date, req.body.id]);
-        res.status(201);
-        res.json(task.rows);
+        const {task, done, due_date} = req.body;
+        res.status(200);
+        res.json(await taskModel.putTask(task, done, due_date, req.params.id));
     }
 
-    async deleteTask(req, res) {
-        await db.query(`DELETE FROM todo WHERE id=$1;`, [req.body.id]);
-        res.status(200);
-        res.end();
+     deleteTask(req, res) {
+        taskModel.deleteTask(req, res);
     }
 }
 
