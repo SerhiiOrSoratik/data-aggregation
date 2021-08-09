@@ -1,54 +1,77 @@
-const db = require('../db');
+const knexDb = require('../knex');
 
-class ListsModel {
-    
-    async createList(id, title) {
-        const newList = await db.query(`INSERT INTO lists (id, title) VALUES ($1, $2) RETURNING *`, [id, title]);
-        return newList.rows;
+class ListModel {
+
+    createList(req, res) {
+        const {id, title} = req.body;
+        knexDb('lists').insert({id: id, title: title}, "*")
+        .catch((err) => {
+            res.json(err);
+        })
+        .then((data) => {
+            res.status(201);
+            res.json(data);
+        });
     }
 
-    async getLists() {
-        const lists = await db.query('SELECT * FROM lists;');
-        return lists.rows;
+    getLists(req, res) {
+        knexDb("lists").then((data) => {
+            res.status(200);
+            res.json(data);
+        })
     }
 
-    async updateTask(title, id) {
-        const list = await db.query(`UPDATE lists SET title=$1 WHERE id=$2 RETURNING *`, [title, id]);
-        return list.rows;
+    updateTask(req, res) {
+        knexDb('lists')
+            .where('id', req.params.id)
+            .update({title: req.body.title}, "*")
+            .catch((err) => {
+                res.json(err);
+            })
+            .then((data) => {
+                    res.status(200);
+                    res.json(data);
+            });
     }
 
-    async deleteList(id) {
-        await db.query(`DELETE FROM lists WHERE id=$1;`, [id]);
-
+    deleteList(req, res) {
+        knexDb('lists')
+        .where('id', req.params.id) 
+        .del()
+        .catch((err) => {
+            res.json(err);
+        })
+        .then(() => {
+            res.status(200);
+            res.end();
+        })
     }
 
-    async createTask(req, res) {
-        const {task, done, due_date} = req.body;
-        const listid = req.params.listid;
-        const newTask = await db.query(`INSERT INTO todo (listid, task, done, due_date) VALUES ($1, $2, $3, $4) RETURNING *`, [listid, task, done, due_date]);
-        res.status(201);
-        res.json(newTask.rows);
-    }
-
-    async getTasks(req, res) {
+    getTasks(req, res) {
         const listid = req.params.listid;
         const all = req.query.all;
-        let tasks = {};
         if (all === 'true') {
-             tasks = await db.query(`SELECT * FROM todo WHERE listid = $1;`, [listid]);
-             res.status(200);
-             res.json(tasks.rows);
+             knexDb("todo")
+             .where('listid', listid)
+             .then((data) => {
+                res.status(200);
+                res.json(data);
+            })
         }    
         else if(all === 'false') {
-             tasks = await db.query(`SELECT * FROM todo WHERE (listid = $1) AND (done = false)`, [listid]);
-             res.status(200);
-             res.json(tasks.rows);
+             knexDb("todo")
+             .where({listid: listid, done: false})
+             .then((data) => {
+                res.status(200);
+                res.json(data);
+            })
         }
         else {
             res.status(400);
             res.end('Bad request');
-        } 
+        }     
     }
+
 }
 
-module.exports = new ListsModel();
+module.exports = new ListModel();

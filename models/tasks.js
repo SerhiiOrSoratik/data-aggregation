@@ -1,56 +1,87 @@
-const db = require('../db');
+const knexDb = require('../knex');
 
-class TasksModel {
+class TaskModel {
 
-    async createTask(listid, task, done, due_date) {
-            const newTask = await db.query(`INSERT INTO todo (listid, task, done, due_date) VALUES ($1, $2, $3, $4) RETURNING *`, [listid, task, done, due_date]);
-            return newTask.rows;    
+    createTask (req, res) {
+        const {listid, task, done, due_date} = req.body;
+        knexDb('todo').insert({listid: listid, task: task, done: done, due_date: due_date}, "*")
+        .catch((err) => {
+            res.json(err);
+        })
+        .then((data) => {
+            res.status(201);
+            res.json(data);
+        });
     }
 
-    async getTasks() {
-        const tasks = await db.query('SELECT * FROM todo;');
-        return tasks.rows;
-    }
-
-    async getTask(id) {
-        const task = await db.query(`SELECT * FROM todo WHERE id=$1;`, [id]);
-        return task.rows;
-    }
-
-    async updateTask(req, res) {
-        let newtask = {};
-
-        if (req.body.task && !req.body.done && !req.body.due_date) {
-            
-            newtask = await db.query(`UPDATE todo SET task=$1 WHERE id=$2 RETURNING *`, [req.body.task, req.params.id]);
-            
+    getTask (req, res) {
+        knexDb("todo")
+        .where('id', req.params.id)
+        .catch((err) => {
+           res.json(err);
+        })
+        .then((data) => {
             res.status(200);
-            res.json(newtask.rows);
-        }
-        else if (!req.body.task && req.body.done !== undefined && !req.body.due_date) {
-            newtask = await db.query(`UPDATE todo SET done=$1 WHERE id=$2 RETURNING *`, [req.body.done, req.params.id]);
-            res.status(200);
-            res.json(newtask.rows);
-        }
-        else if (!req.body.task && !req.body.done && req.body.due_date) {
-            newtask = await db.query(`UPDATE todo SET due_date=$1 WHERE id=$2 RETURNING *`, [req.body.due_date, req.params.id]);
-            res.status(200);
-            res.json(newtask.rows);
-        }
-        else {
-            res.status(400);
-            res.end('Bad request');
-        } 
+            res.json(data);
+        })
     }
 
-    async putTask(task, done, due_date, id) {
-        const newtask = await db.query(`UPDATE todo SET task=$1, done=$2, due_date=$3 WHERE id=$4 RETURNING *`, [task, done, due_date, id]);
-        return newtask.rows;
+    getTasks (req, res) {
+        knexDb("todo").then((data) => {
+          res.status(200);
+          res.json(data);
+        })  
     }
 
-    async deleteTask(id) {
-        await db.query(`DELETE FROM todo WHERE id=$1;`, [id]);
+    updateTask(req, res) {
+        const tasksField = ['task', 'done', 'due_date', 'listid'];
+        let updatedField = {};
+
+        tasksField.forEach(elem => {
+            if (req.body[elem] !== undefined) {
+                updatedField[elem] = req.body[elem];
+            }
+        })
+            knexDb('todo')
+            .where('id', req.params.id)
+            .update(updatedField, "*")
+            .catch((err) => {
+                res.json(err);
+            })
+            .then((data) => {
+                    res.status(200);
+                    res.json(data);
+            });
     }
+
+    putTask(req, res) {
+        const {task, done, due_date} = req.body;
+        knexDb('todo')
+            .where('id', req.params.id)
+            .update({task: task, done: done, due_date: due_date}, "*")
+            .catch((err) => {
+                res.json(err);
+            })
+            .then((data) => {
+                    res.status(201);
+                    res.json(data);
+            });
+    }
+
+    deleteTask(req, res) {
+        knexDb('todo')
+        .where('id', req.params.id) 
+        .del()
+        .catch((err) => {
+            res.json(err);
+        })
+        .then(() => {
+            res.status(200);
+            res.end();
+        });
+    }
+
 }
 
-module.exports = new TasksModel();
+
+module.exports = new TaskModel();

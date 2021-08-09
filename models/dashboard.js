@@ -1,11 +1,19 @@
-const db = require('../db');
+const knexDb = require('../knex');
 
-class DashboardModel { 
-    async getInfo() {
+class DashboardModel {
+    getInfo(req, res) {
         let nowDay = new Date();
         let endDay = new Date(nowDay.getFullYear(), nowDay.getMonth(), nowDay.getDate(), 23, 59, 59, 0);
-        const resultTask = await db.query(`SELECT title, COUNT(*) FROM todo RIGHT JOIN lists ON lists.id = todo.listid WHERE (done = false) AND (due_date BETWEEN $1 AND $2) GROUP BY lists.title;`, [nowDay, endDay])
-        return resultTask.rows;
+
+        knexDb('todo')
+        .select('title', knexDb.raw('COUNT(*)'))
+        .rightJoin('lists', 'lists.id', 'todo.listid')
+        .where('done', false)
+        .whereBetween('due_date', [nowDay, endDay])
+        .groupBy('lists.title')
+        .then((data) => {
+            res.json(data)
+        })
     }
 }
 
