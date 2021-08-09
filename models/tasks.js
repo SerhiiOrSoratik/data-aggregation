@@ -4,7 +4,7 @@ class TasksModel {
 
     async createTask(listid, task, done, due_date) {
             const newTask = await db.query(`INSERT INTO todo (listid, task, done, due_date) VALUES ($1, $2, $3, $4) RETURNING *`, [listid, task, done, due_date]);
-            return newTask.rows;
+            return newTask.rows;    
     }
 
     async getTasks() {
@@ -19,6 +19,7 @@ class TasksModel {
 
     async updateTask(req, res) {
         let newtask = {};
+
         if (req.body.task && !req.body.done && !req.body.due_date) {
             
             newtask = await db.query(`UPDATE todo SET task=$1 WHERE id=$2 RETURNING *`, [req.body.task, req.params.id]);
@@ -47,10 +48,8 @@ class TasksModel {
         return newtask.rows;
     }
 
-    async deleteTask(req, res) {
-        await db.query(`DELETE FROM todo WHERE id=$1;`, [req.body.id]);
-        res.status(200);
-        res.end();
+    async deleteTask(id) {
+        await db.query(`DELETE FROM todo WHERE id=$1;`, [id]);
     }
 }
 
