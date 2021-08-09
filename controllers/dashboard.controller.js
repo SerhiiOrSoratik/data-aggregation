@@ -1,8 +1,8 @@
 const dashboardModel = require('../models/dashboard');
 
 class Dashboard { 
-    async getInfo(req, res) {   
-       res.json(await dashboardModel.getInfo());
+    getInfo(req, res) {
+        dashboardModel.getInfo(req, res);
     }
 }
 

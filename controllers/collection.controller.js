@@ -1,16 +1,12 @@
-const collectionModel = require('../models/colletions');
+const collectionModel = require('../models/collection');
 
 class Collection {
-    info = {};
-
     getData() {
-        // list of tasks for today
-        collectionModel.getData();
+       collectionModel.getData();
     };
 
-    async showDate(res) {
-        res.status(200);
-        res.json(await collectionModel.showDate());
+    showDate(res) {
+        collectionModel.showDate(res);
     }
 }
 

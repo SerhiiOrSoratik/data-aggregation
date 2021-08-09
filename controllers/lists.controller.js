@@ -1,35 +1,31 @@
-const listsModel = require('../models/lists');
+const tasks = require('./tasks.controller');
+const listModel = require('../models/lists');
 
 class Lists {
     
-    async createList(req, res) {
-       const {id, title} = req.body;
-       res.status(201)
-       res.json(await listsModel.createList(id, title));
+    createList(req, res) {
+        listModel.createList(req, res);
     }
 
-    async getLists(req, res) {
-        res.status(200);
-        res.json(await  listsModel.getLists());
+    getLists(req, res) {
+        listModel.getLists(req, res);
     }
 
-    async updateTask(req, res) {
-        res.status(200);
-        res.json(await listsModel.updateTask(req.body.title, req.params.id));
+    updateTask(req, res) {
+        listModel.updateTask(req, res);
     }
 
-    async deleteList(req, res) {
-        await listsModel.updateTask(req.params.id)
-        res.status(200);
-        res.end();
+    deleteList(req, res) {
+        listModel.deleteList(req, res);
     }
 
     createTask(req, res) {
-        listsModel.createTask(req, res);
+        req.body.listid = req.params.listid;
+        tasks.createTask(req, res);
     }
 
-    getTasks(req, res) {    
-        listsModel.getTasks(req, res);
+    getTasks(req, res) {
+       listModel.getTasks(req, res);
     }
 }
 

@@ -1,64 +1,29 @@
-const taskModel = require('../models/tasks');
+const taskModel = require('../models/tasks')
 
 class Tasks {
 
-     async createTask(req, res) {
-        try {
-            const {listid, task, done, due_date} = req.body;
-            res.status(201);
-            res.json(await taskModel.createTask(listid, task, done, due_date));
-        }
-        catch {
-            res.status(400);
-            res.end('Bad request');
-        }
-        
+    createTask(req, res) {
+        taskModel.createTask(req, res);
     }
 
-     async getTasks(req, res) {
-        res.status(200);
-        res.json(await taskModel.getTasks());
+    getTasks(req, res) {
+        taskModel.getTasks(req, res)
     }
 
-     async getTask(req, res) {
-        res.status(200)
-        res.json(await taskModel.getTask(req.params.id));
+    getTask(req, res) {
+        taskModel.getTask(req, res);
     }
 
     updateTask(req, res) {
-        try {
-            taskModel.updateTask(req, res);
-        }
-        catch {
-            res.status(400);
-            res.end('Bad request');
-        }
+        taskModel.updateTask(req, res);
     }
 
-    async putTask(req, res) {
-        try {
-            const {task, done, due_date} = req.body;
-            res.status(200);
-            res.json(await taskModel.putTask(task, done, due_date, req.params.id));
-        }
-        catch {
-            res.status(400);
-            res.end('Bad request');
-        }
-        
+    putTask(req, res) {
+        taskModel.putTask(req, res);
     }
 
-     deleteTask(req, res) {
-         try {
-            taskModel.deleteTask(req.params.id);
-            res.status(200);
-            res.end();
-         }
-         catch {
-            res.status(400);
-            res.end('Bad request');
-         }
-        
+    deleteTask(req, res) {
+        taskModel.deleteTask(req, res);
     }
 }
 
